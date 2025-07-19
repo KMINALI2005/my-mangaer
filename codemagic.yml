@@ -1,23 +1,23 @@
-# codemagic.yml
+# codemagic.yml - نسخة معدلة لبناء APK من نوع DEBUG
 
 workflows:
-  android-build:
-    name: Android Build
-    instance_type: mac_mini_m1 # استخدام جهاز ماك M1 السريع
+  android-build-debug: # تم تغيير الاسم ليكون أوضح
+    name: Android Debug Build
+    instance_type: mac_mini_m1
 
     environment:
       flutter: 3.19.6
       java: 17
-      groups:
-        - codemagic-signing # اسم مجموعة متغيرات التوقيع
+      # تم حذف مجموعة التوقيع "groups" لأننا لا نحتاجها في نسخة الـ debug
 
     scripts:
       - name: Get Flutter dependencies
         script: |
           flutter pub get
-      - name: Build Android APK
+      - name: Build Android APK (Debug)
         script: |
-          flutter build apk --release
+          flutter build apk --debug # <-- التغيير الأهم: من release إلى debug
 
     artifacts:
-      - build/app/outputs/flutter-apk/app-release.apk
+      # المسار يتغير أيضاً ليعكس نوع النسخة
+      - build/app/outputs/flutter-apk/app-debug.apk
