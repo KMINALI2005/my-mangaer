@@ -1,0 +1,36 @@
+# codemagic.yml - النسخة النهائية لضمان APK debug
+
+workflows:
+  android-debug-apk-final: # اسم جديد لـ Workflow للتأكد من اختيار الصحيح
+    name: Android Debug Build (APK Final Attempt)
+    instance_type: mac_mini_m1 # استخدام جهاز ماك M1 السريع
+
+    environment:
+      flutter: 3.19.6
+      java: 17
+
+    scripts:
+      - name: Get Flutter dependencies
+        script: |
+          flutter pub get
+
+      - name: Clean ALL previous builds outputs
+        script: |
+          set -x # لعرض الأوامر التي يتم تنفيذها (للتتبع)
+          flutter clean
+          # حذف مجلد build كاملاً في الـ root
+          rm -rf build/
+          # حذف مجلد outputs في مجلد Android (للتأكد)
+          rm -rf android/app/build/outputs/
+
+      - name: Build Android APK (Explicitly with Flutter command)
+        script: |
+          set -x # لعرض الأوامر التي يتم تنفيذها
+          # استخدام أمر فلاتر المباشر لبناء APK debug
+          flutter build apk --debug
+          # لعرض محتويات مجلد الـ APK للتأكد من وجود الملف
+          ls -l build/app/outputs/flutter-apk/ # هذا سيظهر لك الملفات داخل المجلد
+
+    artifacts:
+      # هذا هو المسار الذي يضع فيه 'flutter build apk' ملف الـ APK
+      - build/app/outputs/flutter-apk/app-debug.apk
