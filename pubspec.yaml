@@ -1,26 +1,42 @@
-name: my_manager
-description: تطبيق دفتر الديون للعملاء
-
+name: smart_calculator
+description: تطبيق آلة حاسبة ذكية لجمع الأرقام وحفظ السجل
 publish_to: 'none'
 
 version: 1.0.0+1
 
 environment:
-  sdk: '>=2.19.0 <4.0.0'
-  flutter: ">=1.17.0"
+  sdk: '>=3.0.0 <4.0.0'
+  flutter: ">=3.10.0"
 
 dependencies:
   flutter:
     sdk: flutter
-  cupertino_icons: ^1.0.2
-  sqflite: ^2.3.0
-  path: ^1.8.3
-  intl: ^0.18.1
+  
+  # حفظ البيانات محلياً
+  shared_preferences: ^2.2.2
+  
+  # أيقونات إضافية
+  cupertino_icons: ^1.0.6
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^2.0.0
+  
+  flutter_lints: ^3.0.0
 
 flutter:
   uses-material-design: true
+  
+  # أيقونات التطبيق
+  # icons:
+  #   android: "launcher_icon"
+  #   ios: true
+  #   image_path: "assets/icon/icon.png"
+  
+  # الخطوط (اختيارية)
+  # fonts:
+  #   - family: Cairo
+  #     fonts:
+  #       - asset: fonts/Cairo-Regular.ttf
+  #       - asset: fonts/Cairo-Bold.ttf
+  #         weight: 700
