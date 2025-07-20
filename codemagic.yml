@@ -1,36 +1,61 @@
-# codemagic.yml - النسخة النهائية لضمان APK debug
+# .github/workflows/build-apk.yml
 
-workflows:
-  android-debug-apk-final: # اسم جديد لـ Workflow للتأكد من اختيار الصحيح
-    name: Android Debug Build (APK Final Attempt)
-    instance_type: mac_mini_m1 # استخدام جهاز ماك M1 السريع
+name: Build Android APK
 
-    environment:
-      flutter: 3.19.6
-      java: 17
+# الربط مع الحدث: يتم تشغيل هذا الإجراء عند الدفع إلى الفرع main
+on:
+  push:
+    branches:
+      - main
 
-    scripts:
+jobs:
+  build:
+    runs-on: ubuntu-latest # استخدام أحدث نسخة من نظام أوبنتو
+
+    steps:
+      # 1. سحب الكود من المستودع
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2. إعداد بيئة جافا (Java) - مشروعك يتطلب الإصدار 17
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      # 3. إعداد بيئة فلاتر (Flutter)
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.19.6'
+          channel: 'stable'
+
+      # 4. تحميل الاعتماديات (Dependencies)
       - name: Get Flutter dependencies
-        script: |
-          flutter pub get
+        run: flutter pub get
 
-      - name: Clean ALL previous builds outputs
-        script: |
-          set -x # لعرض الأوامر التي يتم تنفيذها (للتتبع)
-          flutter clean
-          # حذف مجلد build كاملاً في الـ root
-          rm -rf build/
-          # حذف مجلد outputs في مجلد Android (للتأكد)
-          rm -rf android/app/build/outputs/
+      # 5. فك تشفير وتثبيت مفتاح التوقيع (Keystore)
+      #    هذه الخطوة ضرورية لإنشاء نسخة release
+      - name: Decode Keystore
+        run: |
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/upload-keystore.jks
 
-      - name: Build Android APK (Explicitly with Flutter command)
-        script: |
-          set -x # لعرض الأوامر التي يتم تنفيذها
-          # استخدام أمر فلاتر المباشر لبناء APK debug
-          flutter build apk --debug
-          # لعرض محتويات مجلد الـ APK للتأكد من وجود الملف
-          ls -l build/app/outputs/flutter-apk/ # هذا سيظهر لك الملفات داخل المجلد
+      # 6. إنشاء ملف key.properties من الأسرار (Secrets)
+      - name: Create key.properties
+        run: |
+          echo "storeFile=upload-keystore.jks" > android/key.properties
+          echo "storePassword=${{ secrets.KEY_STORE_PASSWORD }}" >> android/key.properties
+          echo "keyAlias=${{ secrets.KEY_ALIAS }}" >> android/key.properties
+          echo "keyPassword=${{ secrets.KEY_PASSWORD }}" >> android/key.properties
 
-    artifacts:
-      # هذا هو المسار الذي يضع فيه 'flutter build apk' ملف الـ APK
-      - build/app/outputs/flutter-apk/app-debug.apk
+      # 7. بناء ملف APK للتوزيع (Release)
+      - name: Build APK
+        run: flutter build apk --release
+
+      # 8. رفع ملف الـ APK كـ "قطعة أثرية" (Artifact) للتحميل
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
