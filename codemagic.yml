@@ -1,61 +1,137 @@
-# .github/workflows/build-apk.yml
+workflows:
+  android-build:
+    name: Android Build
+    max_build_duration: 60
+    instance_type: mac_mini_m1
+    environment:
+      android_signing:
+        - keystore_reference
+      groups:
+        - google_play
+      vars:
+        PACKAGE_NAME: "com.kminali.my_manager"
+      flutter: stable
+      xcode: latest
+      cocoapods: default
+    scripts:
+      - name: Set up local.properties
+        script: |
+          echo "flutter.sdk=$HOME/programs/flutter" > "$CM_BUILD_DIR/android/local.properties"
+      - name: Get Flutter packages
+        script: |
+          flutter packages pub get
+      - name: Flutter analyze
+        script: |
+          flutter analyze
+      - name: Flutter unit tests
+        script: |
+          flutter test
+        ignore_failure: true
+      - name: Build APK with Flutter
+        script: |
+          flutter build apk --release
+    artifacts:
+      - build/**/outputs/**/*.apk
+      - build/**/outputs/**/*.aab
+      - build/**/outputs/**/mapping.txt
+      - flutter_drive.log
+    publishing:
+      email:
+        recipients:
+          - kminali2005@gmail.com
+        notify:
+          success: true
+          failure: false
 
-name: Build Android APK
-
-# الربط مع الحدث: يتم تشغيل هذا الإجراء عند الدفع إلى الفرع main
-on:
-  push:
-    branches:
-      - main
-
-jobs:
-  build:
-    runs-on: ubuntu-latest # استخدام أحدث نسخة من نظام أوبنتو
-
-    steps:
-      # 1. سحب الكود من المستودع
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      # 2. إعداد بيئة جافا (Java) - مشروعك يتطلب الإصدار 17
-      - name: Setup Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '17'
-
-      # 3. إعداد بيئة فلاتر (Flutter)
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: '3.19.6'
-          channel: 'stable'
-
-      # 4. تحميل الاعتماديات (Dependencies)
-      - name: Get Flutter dependencies
-        run: flutter pub get
-
-      # 5. فك تشفير وتثبيت مفتاح التوقيع (Keystore)
-      #    هذه الخطوة ضرورية لإنشاء نسخة release
-      - name: Decode Keystore
-        run: |
-          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/upload-keystore.jks
-
-      # 6. إنشاء ملف key.properties من الأسرار (Secrets)
-      - name: Create key.properties
-        run: |
-          echo "storeFile=upload-keystore.jks" > android/key.properties
-          echo "storePassword=${{ secrets.KEY_STORE_PASSWORD }}" >> android/key.properties
-          echo "keyAlias=${{ secrets.KEY_ALIAS }}" >> android/key.properties
-          echo "keyPassword=${{ secrets.KEY_PASSWORD }}" >> android/key.properties
-
-      # 7. بناء ملف APK للتوزيع (Release)
+  android-release:
+    name: Android Release Build
+    max_build_duration: 120
+    instance_type: mac_mini_m1
+    triggering:
+      events:
+        - tag
+      tag_patterns:
+        - pattern: 'v*.*.*'
+          include: true
+    environment:
+      android_signing:
+        - keystore_reference
+      groups:
+        - google_play
+      vars:
+        PACKAGE_NAME: "com.kminali.my_manager"
+        GOOGLE_PLAY_TRACK: "internal"
+      flutter: stable
+      xcode: latest
+      cocoapods: default
+    scripts:
+      - name: Set up local.properties
+        script: |
+          echo "flutter.sdk=$HOME/programs/flutter" > "$CM_BUILD_DIR/android/local.properties"
+      - name: Get Flutter packages
+        script: |
+          flutter packages pub get
+      - name: Flutter analyze
+        script: |
+          flutter analyze
+      - name: Flutter unit tests
+        script: |
+          flutter test
+        ignore_failure: true
+      - name: Set version from tag
+        script: |
+          export NEW_VERSION=${CM_TAG#v}
+          export NEW_BUILD_NUMBER=$(($(google-play get-latest-build-number --package-name "$PACKAGE_NAME" --tracks="$GOOGLE_PLAY_TRACK") + 1))
+          
+          # Update pubspec.yaml
+          sed -i "s/^version:.*/version: $NEW_VERSION+$NEW_BUILD_NUMBER/" pubspec.yaml
+          
+          echo "Updated version to: $NEW_VERSION+$NEW_BUILD_NUMBER"
+      - name: Build Android App Bundle
+        script: |
+          flutter build appbundle --release
       - name: Build APK
-        run: flutter build apk --release
+        script: |
+          flutter build apk --release
+    artifacts:
+      - build/**/outputs/**/*.apk
+      - build/**/outputs/**/*.aab
+      - build/**/outputs/**/mapping.txt
+      - flutter_drive.log
+    publishing:
+      google_play:
+        credentials: $GCLOUD_SERVICE_ACCOUNT_CREDENTIALS
+        track: internal
+        submit_as_draft: true
+      email:
+        recipients:
+          - kminali2005@gmail.com
+        notify:
+          success: true
+          failure: true
 
-      # 8. رفع ملف الـ APK كـ "قطعة أثرية" (Artifact) للتحميل
-      - name: Upload APK Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: release-apk
-          path: build/app/outputs/flutter-apk/app-release.apk
+  android-debug:
+    name: Android Debug Build
+    max_build_duration: 30
+    instance_type: linux_x2
+    environment:
+      flutter: stable
+    scripts:
+      - name: Set up local.properties
+        script: |
+          echo "flutter.sdk=$HOME/programs/flutter" > "$CM_BUILD_DIR/android/local.properties"
+      - name: Get Flutter packages
+        script: |
+          flutter packages pub get
+      - name: Build Debug APK
+        script: |
+          flutter build apk --debug
+    artifacts:
+      - build/**/outputs/**/*.apk
+    publishing:
+      email:
+        recipients:
+          - kminali2005@gmail.com
+        notify:
+          success: false
+          failure: true
