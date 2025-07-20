@@ -1,23 +1,31 @@
-# codemagic.yml
+# codemagic.yml - نسخة معدلة لبناء APK من نوع DEBUG بشكل قسري
 
 workflows:
-  android-build:
-    name: Android Build
+  android-build-debug-apk: # تم تغيير الاسم ليكون أوضح
+    name: Android Debug Build (APK Forced)
     instance_type: mac_mini_m1 # استخدام جهاز ماك M1 السريع
 
     environment:
       flutter: 3.19.6
       java: 17
-      groups:
-        - codemagic-signing # اسم مجموعة متغيرات التوقيع
 
     scripts:
       - name: Get Flutter dependencies
         script: |
           flutter pub get
-      - name: Build Android APK
+      - name: Clean Flutter build (Recommended)
         script: |
-          flutter build apk --release
+          flutter clean # قم بتنظيف المشروع قبل البناء لضمان عدم وجود ملفات قديمة
+
+      - name: Build Android APK (using Gradle directly)
+        script: |
+          # الانتقال إلى مجلد مشروع الأندرويد
+          cd android
+          # تشغيل مهمة Gradle لإنشاء APK من نوع Debug
+          ./gradlew assembleDebug
+          # هذا الأمر سينشئ ملف APK مباشرة في المسار build/outputs/apk/debug/
+          # وليس في المسار الافتراضي لـ flutter build apk
 
     artifacts:
-      - build/app/outputs/flutter-apk/app-release.apk
+      # هذا هو المسار الذي يتم فيه إنشاء ملف APK عندما تستخدم 'assembleDebug' مباشرة
+      - app/build/outputs/apk/debug/app-debug.apk
