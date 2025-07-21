@@ -1,8 +1,15 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
-    <application
+<!DOCTYPE manifest [
+    <!-- محتوى DTD إذا كان موجوداً -->
+]>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.example.age_calculator_smart">
+
+   <application
         android:label="حساب العمر الذكي"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:enableOnBackInvokedCallback="true">
+
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -11,17 +18,26 @@
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
             android:hardwareAccelerated="true"
             android:windowSoftInputMode="adjustResize">
+
+            <!-- هذا الجزء يحدد الستايل الذي سيعمل بعد أن تكتمل شاشة البداية -->
             <meta-data
-                android:name="io.flutter.embedding.android.NormalTheme"
-                android:resource="@style/NormalTheme"
-            />
+              android:name="io.flutter.embedding.android.NormalTheme"
+              android:resource="@style/NormalTheme"
+              />
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+
+        <!-- لا تنسَ إزالة هذا السطر عند بناء نسخة Release -->
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
-    </application>
+   </application>
+
+    <!-- التطبيق لا يحتاج أي صلاحيات حالياً -->
+    <!-- لو احتجت صلاحية الإنترنت في المستقبل، أضف السطر التالي -->
+    <!-- <uses-permission android:name="android.permission.INTERNET"/> -->
 </manifest>
