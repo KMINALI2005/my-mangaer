@@ -1,36 +1,28 @@
+# codemagic.yaml
 workflows:
-  android-workflow:
-    name: Android Release
-    max_build_duration: 60
+  android-app-release:
+    name: Android Release Build
     environment:
-      flutter: stable
-      android_signing:
-        - keystore_reference
-      vars:
-        PACKAGE_NAME: "com.example.age_calculator"
-      java: 11
+      flutter: stable # يمكنك تحديد نسخة فلاتر معينة مثل 2.10.5
+      
     scripts:
-      - name: Set up local.properties
-        script: |
-          echo "flutter.sdk=$HOME/programs/flutter" > "$CM_BUILD_DIR/android/local.properties"
       - name: Get Flutter packages
-        script: |
-          flutter packages pub get
-      - name: Flutter analyze
-        script: |
-          flutter analyze
-      - name: Flutter build APK
-        script: |
-          flutter build apk --release --build-number=$(($(date +%s)/15)) --build-name=1.0.$(date +%Y%m%d)
+        script: | 
+          flutter pub get
+          
+      - name: Build Android App Bundle
+        script: | 
+          flutter build appbundle --release
+          
     artifacts:
-      - build/**/outputs/**/*.apk
+      - build/app/outputs/bundle/release/app-release.aab
+      
     publishing:
       email:
         recipients:
-          - akmin2005@outlook.com.com
+          - akmin2005@outlook.com # ضع ايميلك هنا ليصلك إشعار عند اكتمال البناء
         notify:
           success: true
           failure: true
-         
           
           
