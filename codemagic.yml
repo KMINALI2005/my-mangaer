@@ -1,18 +1,13 @@
 workflows:
-  android-build:
-    name: Android Build
+  android-workflow:
+    name: Android Release
     max_build_duration: 60
-    instance_type: mac_mini_m1
     environment:
+      flutter: stable
       android_signing:
         - keystore_reference
-      groups:
-        - google_play
       vars:
-        PACKAGE_NAME: "com.kminali.my_manager"
-      flutter: stable
-      xcode: latest
-      cocoapods: default
+        PACKAGE_NAME: "com.yourdomain.agecalculator"
     scripts:
       - name: Set up local.properties
         script: |
@@ -20,118 +15,14 @@ workflows:
       - name: Get Flutter packages
         script: |
           flutter packages pub get
-      - name: Flutter analyze
-        script: |
-          flutter analyze
-      - name: Flutter unit tests
-        script: |
-          flutter test
-        ignore_failure: true
-      - name: Build APK with Flutter
+      - name: Flutter build APK
         script: |
           flutter build apk --release
     artifacts:
       - build/**/outputs/**/*.apk
       - build/**/outputs/**/*.aab
       - build/**/outputs/**/mapping.txt
-      - flutter_drive.log
     publishing:
       email:
         recipients:
-          - kminali2005@gmail.com
-        notify:
-          success: true
-          failure: false
-
-  android-release:
-    name: Android Release Build
-    max_build_duration: 120
-    instance_type: mac_mini_m1
-    triggering:
-      events:
-        - tag
-      tag_patterns:
-        - pattern: 'v*.*.*'
-          include: true
-    environment:
-      android_signing:
-        - keystore_reference
-      groups:
-        - google_play
-      vars:
-        PACKAGE_NAME: "com.kminali.my_manager"
-        GOOGLE_PLAY_TRACK: "internal"
-      flutter: stable
-      xcode: latest
-      cocoapods: default
-    scripts:
-      - name: Set up local.properties
-        script: |
-          echo "flutter.sdk=$HOME/programs/flutter" > "$CM_BUILD_DIR/android/local.properties"
-      - name: Get Flutter packages
-        script: |
-          flutter packages pub get
-      - name: Flutter analyze
-        script: |
-          flutter analyze
-      - name: Flutter unit tests
-        script: |
-          flutter test
-        ignore_failure: true
-      - name: Set version from tag
-        script: |
-          export NEW_VERSION=${CM_TAG#v}
-          export NEW_BUILD_NUMBER=$(($(google-play get-latest-build-number --package-name "$PACKAGE_NAME" --tracks="$GOOGLE_PLAY_TRACK") + 1))
-          
-          # Update pubspec.yaml
-          sed -i "s/^version:.*/version: $NEW_VERSION+$NEW_BUILD_NUMBER/" pubspec.yaml
-          
-          echo "Updated version to: $NEW_VERSION+$NEW_BUILD_NUMBER"
-      - name: Build Android App Bundle
-        script: |
-          flutter build appbundle --release
-      - name: Build APK
-        script: |
-          flutter build apk --release
-    artifacts:
-      - build/**/outputs/**/*.apk
-      - build/**/outputs/**/*.aab
-      - build/**/outputs/**/mapping.txt
-      - flutter_drive.log
-    publishing:
-      google_play:
-        credentials: $GCLOUD_SERVICE_ACCOUNT_CREDENTIALS
-        track: internal
-        submit_as_draft: true
-      email:
-        recipients:
-          - kminali2005@gmail.com
-        notify:
-          success: true
-          failure: true
-
-  android-debug:
-    name: Android Debug Build
-    max_build_duration: 30
-    instance_type: linux_x2
-    environment:
-      flutter: stable
-    scripts:
-      - name: Set up local.properties
-        script: |
-          echo "flutter.sdk=$HOME/programs/flutter" > "$CM_BUILD_DIR/android/local.properties"
-      - name: Get Flutter packages
-        script: |
-          flutter packages pub get
-      - name: Build Debug APK
-        script: |
-          flutter build apk --debug
-    artifacts:
-      - build/**/outputs/**/*.apk
-    publishing:
-      email:
-        recipients:
-          - kminali2005@gmail.com
-        notify:
-          success: false
-          failure: true
+          - your.email@example.com
