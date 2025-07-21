@@ -14,7 +14,7 @@ dependencies:
   
   cupertino_icons: ^1.0.2
   google_fonts: ^5.1.0 # لإضافة خطوط جميلة
-  intl: ^0.18.1 # لتنسيق الأرقام والتواريخ
+  intl: ^0.20.1 # لتنسيق الأرقام والتواريخ
 
 dev_dependencies:
   flutter_test:
