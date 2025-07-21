@@ -7,7 +7,8 @@ workflows:
       android_signing:
         - keystore_reference
       vars:
-        PACKAGE_NAME: "com.yourdomain.agecalculator"
+        PACKAGE_NAME: "com.example.age_calculator"
+      java: 11
     scripts:
       - name: Set up local.properties
         script: |
@@ -15,14 +16,21 @@ workflows:
       - name: Get Flutter packages
         script: |
           flutter packages pub get
+      - name: Flutter analyze
+        script: |
+          flutter analyze
       - name: Flutter build APK
         script: |
-          flutter build apk --release
+          flutter build apk --release --build-number=$(($(date +%s)/15)) --build-name=1.0.$(date +%Y%m%d)
     artifacts:
       - build/**/outputs/**/*.apk
-      - build/**/outputs/**/*.aab
-      - build/**/outputs/**/mapping.txt
     publishing:
       email:
         recipients:
-          - akmin2005@outlook.com
+          - akmin2005@outlook.com.com
+        notify:
+          success: true
+          failure: true
+         
+          
+          
