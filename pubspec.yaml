@@ -1,42 +1,26 @@
-name: smart_calculator
-description: تطبيق آلة حاسبة ذكية لجمع الأرقام وحفظ السجل
-publish_to: 'none'
-
+name: age_calculator_smart
+description: A new Flutter project for a smart age calculator.
+publish_to: 'none' 
 version: 1.0.0+1
 
 environment:
-  sdk: '>=3.0.0 <4.0.0'
-  flutter: ">=3.10.0"
+  sdk: '>=3.0.5 <4.0.0'
 
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations: # لدعم اللغة العربية
+    sdk: flutter
   
-  # حفظ البيانات محلياً
-  shared_preferences: ^2.2.2
-  
-  # أيقونات إضافية
-  cupertino_icons: ^1.0.6
+  cupertino_icons: ^1.0.2
+  google_fonts: ^5.1.0 # لإضافة خطوط جميلة
+  intl: ^0.18.1 # لتنسيق الأرقام والتواريخ
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  
-  flutter_lints: ^3.0.0
+  flutter_lints: ^2.0.0
 
 flutter:
   uses-material-design: true
-  
-  # أيقونات التطبيق
-  # icons:
-  #   android: "launcher_icon"
-  #   ios: true
-  #   image_path: "assets/icon/icon.png"
-  
-  # الخطوط (اختيارية)
-  # fonts:
-  #   - family: Cairo
-  #     fonts:
-  #       - asset: fonts/Cairo-Regular.ttf
-  #       - asset: fonts/Cairo-Bold.ttf
-  #         weight: 700
+  generate: true # ضروري لدعم اللغة العربية
