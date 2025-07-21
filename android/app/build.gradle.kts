@@ -1,90 +1,67 @@
-plugins {
-    id("com.android.application")
-    id("org.jetbrains.kotlin.android")
-    id("dev.flutter.flutter-gradle-plugin")
+def localProperties = new Properties()
+def localPropertiesFile = rootProject.file('local.properties')
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.withReader('UTF-8') { reader ->
+        localProperties.load(reader)
+    }
 }
 
+def flutterRoot = localProperties.getProperty('flutter.sdk')
+if (flutterRoot == null) {
+    throw new GradleException("Flutter SDK not found. Define location with flutter.sdk in the local.properties file.")
+}
+
+def flutterVersionCode = localProperties.getProperty('flutter.versionCode')
+if (flutterVersionCode == null) {
+    flutterVersionCode = '1'
+}
+
+def flutterVersionName = localProperties.getProperty('flutter.versionName')
+if (flutterVersionName == null) {
+    flutterVersionName = '1.0'
+}
+
+apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
+
 android {
-    namespace = "com.kminali.my_manager"
-    compileSdk = 34
+    namespace "com.example.age_calculator"
+    compileSdkVersion flutter.compileSdkVersion
+    ndkVersion flutter.ndkVersion
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
     }
 
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = '1.8'
+    }
+
+    sourceSets {
+        main.java.srcDirs += 'src/main/kotlin'
     }
 
     defaultConfig {
-        applicationId = "com.kminali.my_manager"
-        minSdk = 21
-        targetSdk = 34
-        versionCode = 1
-        versionName = "1.0.0"
-        
-        multiDexEnabled = true
-        
-        ndk {
-            abiFilters += listOf("arm64-v8a", "armeabi-v7a", "x86_64")
-        }
-    }
-
-    signingConfigs {
-        create("release") {
-            val keystorePropertiesFile = rootProject.file("key.properties")
-            if (keystorePropertiesFile.exists()) {
-                val keystoreProperties = java.util.Properties()
-                keystoreProperties.load(java.io.FileInputStream(keystorePropertiesFile))
-                
-                keyAlias = keystoreProperties["keyAlias"] as String
-                keyPassword = keystoreProperties["keyPassword"] as String
-                storeFile = file(keystoreProperties["storeFile"] as String)
-                storePassword = keystoreProperties["storePassword"] as String
-            }
-        }
+        applicationId "com.example.age_calculator"
+        minSdkVersion flutter.minSdkVersion
+        targetSdkVersion flutter.targetSdkVersion
+        versionCode flutterVersionCode.toInteger()
+        versionName flutterVersionName
     }
 
     buildTypes {
-        debug {
-            applicationIdSuffix = ".debug"
-            versionNameSuffix = "-debug"
-            isDebuggable = true
-            isMinifyEnabled = false
-        }
-        
         release {
-            isMinifyEnabled = true
-            isDebuggable = false
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
-            )
-            signingConfig = signingConfigs.getByName("release")
+            signingConfig signingConfigs.debug
         }
-    }
-
-    buildFeatures {
-        buildConfig = true
-    }
-
-    packaging {
-        resources {
-            excludes += "/META-INF/{AL2.0,LGPL2.1}"
-        }
-    }
-
-    lint {
-        checkReleaseBuilds = false
-        abortOnError = false
     }
 }
 
 flutter {
-    source = "../.."
+    source '../..'
 }
 
 dependencies {
-    implementation("androidx.multidex:multidex:2.0.1")
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 }
