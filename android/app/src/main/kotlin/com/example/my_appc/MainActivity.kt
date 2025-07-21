@@ -1,5 +1,6 @@
-package com.example.my_appc
+package com.example.age_calculator
 
 import io.flutter.embedding.android.FlutterActivity
 
-class MainActivity : FlutterActivity()
+class MainActivity: FlutterActivity() {
+}
